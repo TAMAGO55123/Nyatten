@@ -1,0 +1,81 @@
+name: Release Chrome Extension
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - 'extension/manifest.json'
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Read manifest version
+              id: manifest
+              run: |
+                  VERSION=$(jq -r '.version' extension/manifest.json)
+                  if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+                    echo "manifest.json に version が見つかりません" >&2
+                    exit 1
+                  fi
+                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+            - name: Get latest release version
+              id: latest_release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
+                  # v プレフィックスを除去して比較
+                  LATEST_VERSION=${LATEST_TAG#v}
+                  echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+                  echo "Latest release version: $LATEST_VERSION"
+
+            - name: Compare versions
+              id: compare
+              run: |
+                  NEW="${{ steps.manifest.outputs.version }}"
+                  OLD="${{ steps.latest_release.outputs.latest_version }}"
+
+                  if [ -z "$OLD" ]; then
+                    echo "should_release=true" >> "$GITHUB_OUTPUT"
+                    echo "既存Releaseなし。リリースを実行します。"
+                    exit 0
+                  fi
+
+                  # バージョン文字列をドット区切りで比較 (semver想定)
+                  HIGHER=$(printf '%s\n%s\n' "$OLD" "$NEW" | sort -V | tail -n1)
+
+                  if [ "$HIGHER" = "$NEW" ] && [ "$NEW" != "$OLD" ]; then
+                    echo "should_release=true" >> "$GITHUB_OUTPUT"
+                    echo "新バージョン $NEW は $OLD より高いのでリリースします。"
+                  else
+                    echo "should_release=false" >> "$GITHUB_OUTPUT"
+                    echo "新バージョン $NEW は $OLD 以下なのでスキップします。"
+                  fi
+
+            - name: Create zip
+              if: steps.compare.outputs.should_release == 'true'
+              run: |
+                  cd extension
+                  zip -r "../extension-v${{ steps.manifest.outputs.version }}.zip" . -x ".*"
+                  cd ..
+                  ls -la extension-v*.zip
+
+            - name: Create GitHub Release
+              if: steps.compare.outputs.should_release == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  VERSION="${{ steps.manifest.outputs.version }}"
+                  gh release create "v${VERSION}" \
+                    "nyatten-v${VERSION}.zip" \
+                    --title "V${VERSION}" \
+                    --generate-notes

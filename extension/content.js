@@ -1491,10 +1491,19 @@
 		return document.querySelector('section.flex.flex-col.gap-3.px-4.py-6');
 	}
 
+	// injectNyattenCard は /settings ルート専用。非同期解決や
+	// MutationObserver のコールバックが発火した時点で既にルートを
+	// 離れている（例: /settings -> /settings/account）ケースがあるため、
+	// 都度 isOnNyattenCardRoute() で現在のパス/ハッシュを確認する。
+	function isOnNyattenCardRoute() {
+		return location.pathname === '/settings' && !location.hash;
+	}
+
 	function injectNyattenCard(ctx) {
 		Nyatten.util
 			.waitForElement('section.flex.flex-col.gap-3.px-4.py-6')
 			.then((container) => {
+				if (!isOnNyattenCardRoute()) return;
 				if (container.querySelector('[data-nyatten-settings-card]'))
 					return;
 
@@ -1506,6 +1515,13 @@
 				}
 				nyattenCardObserver = new MutationObserver(
 					Nyatten.util.debounce(() => {
+						if (!isOnNyattenCardRoute()) {
+							if (nyattenCardObserver) {
+								nyattenCardObserver.disconnect();
+								nyattenCardObserver = null;
+							}
+							return;
+						}
 						const current = findSettingsCardContainer();
 						if (!current) return;
 						if (
