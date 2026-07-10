@@ -65,9 +65,9 @@ jobs:
               if: steps.compare.outputs.should_release == 'true'
               run: |
                   cd extension
-                  zip -r "../extension-v${{ steps.manifest.outputs.version }}.zip" . -x ".*"
+                  zip -r "../nyatten-v${{ steps.manifest.outputs.version }}.zip" . -x ".*"
                   cd ..
-                  ls -la extension-v*.zip
+                  ls -la nyatten-v*.zip
 
             - name: Create GitHub Release
               if: steps.compare.outputs.should_release == 'true'
