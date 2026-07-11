@@ -903,7 +903,9 @@
 					if (size > 512 * 1024) {
 						const truncatedBytes = bytesData.slice(0, 512 * 1024);
 						const decoder = new TextDecoder('utf-8');
-						loadedContent = decoder.decode(truncatedBytes) + '\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
+						loadedContent =
+							decoder.decode(truncatedBytes) +
+							'\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
 					} else {
 						const decoder = new TextDecoder('utf-8');
 						loadedContent = decoder.decode(bytesData);
@@ -1132,16 +1134,22 @@
 		const renderTabContent = (tab) => {
 			cleanUpBlobUrls();
 			if (content === null && format !== 'sb3') {
-				const sizeStr = totalSize ? (totalSize / 1024).toFixed(1) + ' KB' : '不明';
+				const sizeStr = totalSize
+					? (totalSize / 1024).toFixed(1) + ' KB'
+					: '不明';
 				previewBody.innerHTML =
 					'<div class="flex flex-col items-center justify-center p-6 border border-border rounded-xl bg-muted/10 w-full min-h-[120px] gap-2">' +
-					'<p class="text-xs text-muted-foreground">ファイルサイズが大きいため、自動プレビューは無効化されています (サイズ: ' + sizeStr + ')</p>' +
+					'<p class="text-xs text-muted-foreground">ファイルサイズが大きいため、自動プレビューは無効化されています (サイズ: ' +
+					sizeStr +
+					')</p>' +
 					'<button type="button" class="nyatten-load-preview-btn px-4 py-2 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">' +
 					'プレビューを表示' +
 					'</button>' +
 					'</div>';
 
-				const loadBtn = previewBody.querySelector('.nyatten-load-preview-btn');
+				const loadBtn = previewBody.querySelector(
+					'.nyatten-load-preview-btn',
+				);
 				loadBtn.addEventListener('click', async (e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -1154,19 +1162,24 @@
 						if (!response.ok) throw new Error('Fetch failed');
 						const buf = await response.arrayBuffer();
 						const bytesData = new Uint8Array(buf);
-						
+
 						arrayBuffer = buf;
 						totalSize = buf.byteLength;
-						
+
 						if (totalSize > 512 * 1024) {
-							const truncatedBytes = bytesData.slice(0, 512 * 1024);
+							const truncatedBytes = bytesData.slice(
+								0,
+								512 * 1024,
+							);
 							const decoder = new TextDecoder('utf-8');
-							content = decoder.decode(truncatedBytes) + '\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
+							content =
+								decoder.decode(truncatedBytes) +
+								'\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
 						} else {
 							const decoder = new TextDecoder('utf-8');
 							content = decoder.decode(bytesData);
 						}
-						
+
 						renderTabContent(activeTab || 'ソースコード');
 					} catch (err) {
 						console.error(err);
@@ -1394,7 +1407,8 @@
 					const response = await fetch(url);
 					if (!response.ok) return;
 
-					const contentLength = response.headers.get('Content-Length');
+					const contentLength =
+						response.headers.get('Content-Length');
 					let size = 0;
 					if (contentLength) {
 						size = parseInt(contentLength, 10);
@@ -1414,7 +1428,9 @@
 						} else if (totalSize > 128 * 1024) {
 							const truncatedBytes = bytes.slice(0, 128 * 1024);
 							const decoder = new TextDecoder('utf-8');
-							fullContent = decoder.decode(truncatedBytes) + '\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
+							fullContent =
+								decoder.decode(truncatedBytes) +
+								'\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
 						} else {
 							const decoder = new TextDecoder('utf-8');
 							fullContent = decoder.decode(bytes);
@@ -1475,7 +1491,8 @@
 							const fullResponse = await fetch(url);
 							if (!fullResponse.ok) return;
 
-							const contentLength = fullResponse.headers.get('Content-Length');
+							const contentLength =
+								fullResponse.headers.get('Content-Length');
 							let size = 0;
 							if (contentLength) {
 								size = parseInt(contentLength, 10);
@@ -1503,7 +1520,9 @@
 					if (totalSize > 128 * 1024) {
 						const truncatedBytes = bytes.slice(0, 128 * 1024);
 						const decoder = new TextDecoder('utf-8');
-						fullContent = decoder.decode(truncatedBytes) + '\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
+						fullContent =
+							decoder.decode(truncatedBytes) +
+							'\n\n... (ファイルサイズが大きいため、プレビューは省略されました。全体を表示するにはダウンロードしてください)';
 					} else {
 						const decoder = new TextDecoder('utf-8');
 						fullContent = decoder.decode(bytes);
@@ -1881,8 +1900,10 @@
 					}
 				}
 				if (addedElements.length === 0) return;
-				const uniqueAdded = addedElements.filter(el => {
-					return !addedElements.some(other => other !== el && other.contains(el));
+				const uniqueAdded = addedElements.filter((el) => {
+					return !addedElements.some(
+						(other) => other !== el && other.contains(el),
+					);
 				});
 				for (const el of uniqueAdded) {
 					processNodes(el, ctx);
@@ -1990,8 +2011,10 @@
 						}
 					}
 					if (addedElements.length === 0) return;
-					const uniqueAdded = addedElements.filter(el => {
-						return !addedElements.some(other => other !== el && other.contains(el));
+					const uniqueAdded = addedElements.filter((el) => {
+						return !addedElements.some(
+							(other) => other !== el && other.contains(el),
+						);
 					});
 					for (const el of uniqueAdded) {
 						this._scan(el);
@@ -2139,8 +2162,10 @@
 					}
 				}
 				if (addedElements.length === 0) return;
-				const uniqueAdded = addedElements.filter(el => {
-					return !addedElements.some(other => other !== el && other.contains(el));
+				const uniqueAdded = addedElements.filter((el) => {
+					return !addedElements.some(
+						(other) => other !== el && other.contains(el),
+					);
 				});
 				for (const el of uniqueAdded) {
 					this.processEmojiReplacements(el);
@@ -3051,7 +3076,7 @@
 				key: 'svg',
 				label: 'SVG',
 				type: 'toggle',
-				description: 'SVGファイルの安全なプレビューを有効にします',
+				description: 'SVGファイルのプレビューを有効にします',
 			},
 			{
 				key: 'md',
@@ -3084,7 +3109,7 @@
 				label: 'SB3',
 				type: 'toggle',
 				description:
-					'Scratch 3.0ファイル(.sb3)のプレビューを有効にします',
+					'Scratch 3.0プロジェクトファイルのプレビューを有効にします',
 			},
 		],
 	});
@@ -3970,7 +3995,10 @@
 				for (const mutation of mutations) {
 					for (const node of mutation.addedNodes) {
 						if (node instanceof Element) {
-							if (node.tagName === 'IFRAME' || node.querySelector('iframe')) {
+							if (
+								node.tagName === 'IFRAME' ||
+								node.querySelector('iframe')
+							) {
 								hasIframe = true;
 								break;
 							}
@@ -4020,7 +4048,10 @@
 			);
 			const currentUsernameKey = this._username || '';
 			for (const iframe of iframes) {
-				if (iframe.getAttribute('data-nyatten-turbowarp-processed') === currentUsernameKey) {
+				if (
+					iframe.getAttribute('data-nyatten-turbowarp-processed') ===
+					currentUsernameKey
+				) {
 					continue;
 				}
 				const src = iframe.src;
@@ -4044,7 +4075,10 @@
 					}
 					iframe.removeAttribute('width');
 					iframe.removeAttribute('height');
-					iframe.setAttribute('data-nyatten-turbowarp-processed', currentUsernameKey);
+					iframe.setAttribute(
+						'data-nyatten-turbowarp-processed',
+						currentUsernameKey,
+					);
 				}
 			}
 		},
