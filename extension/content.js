@@ -2232,7 +2232,7 @@
 		id: 'active-indicator',
 		name: 'アクティブインジケータ',
 		description:
-			'ユーザーのステータスを確認します(相手がNyattenを使用している必要があります)',
+			'ユーザーのステータスを確認します(相手もNyattenを使用している必要があります)',
 		defaultConfig: {
 			enabled: true,
 			privateStatus: false,
