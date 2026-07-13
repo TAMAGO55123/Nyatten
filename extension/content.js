@@ -568,7 +568,13 @@
 
 	function estimateFileType(bytes, filename) {
 		// 1. Magic numbers for binary files
-		if (bytes.length >= 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
+		if (
+			bytes.length >= 4 &&
+			bytes[0] === 0x50 &&
+			bytes[1] === 0x4b &&
+			bytes[2] === 0x03 &&
+			bytes[3] === 0x04
+		) {
 			try {
 				const textDecoder = new TextDecoder('utf-8');
 				const str = textDecoder.decode(bytes.slice(0, 1000));
@@ -579,10 +585,23 @@
 
 		// Quick check for common image/document signatures
 		if (bytes.length >= 4) {
-			if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return 'binary'; // PNG
+			if (
+				bytes[0] === 0x89 &&
+				bytes[1] === 0x50 &&
+				bytes[2] === 0x4e &&
+				bytes[3] === 0x47
+			)
+				return 'binary'; // PNG
 			if (bytes[0] === 0xff && bytes[1] === 0xd8) return 'binary'; // JPEG
-			if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return 'binary'; // GIF
-			if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) return 'binary'; // PDF
+			if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46)
+				return 'binary'; // GIF
+			if (
+				bytes[0] === 0x25 &&
+				bytes[1] === 0x50 &&
+				bytes[2] === 0x44 &&
+				bytes[3] === 0x46
+			)
+				return 'binary'; // PDF
 		}
 
 		// 2. Decode as text
@@ -598,7 +617,8 @@
 		let nonPrintable = 0;
 		const len = Math.min(bytes.length, 256);
 		for (let i = 0; i < len; i++) {
-			if (bytes[i] < 9 || (bytes[i] > 13 && bytes[i] < 32)) nonPrintable++;
+			if (bytes[i] < 9 || (bytes[i] > 13 && bytes[i] < 32))
+				nonPrintable++;
 		}
 		if (nonPrintable > Math.max(5, len * 0.05)) return 'binary';
 
@@ -622,7 +642,9 @@
 				if (!text.includes('<') || !text.includes('>')) return false;
 				const parser = new DOMParser();
 				const doc = parser.parseFromString(text, 'text/html');
-				const hasTags = Array.from(doc.body.childNodes).some(n => n.nodeType === 1);
+				const hasTags = Array.from(doc.body.childNodes).some(
+					(n) => n.nodeType === 1,
+				);
 				const hasHead = doc.head.childNodes.length > 0;
 				return hasTags || hasHead || /<!DOCTYPE/i.test(text);
 			} catch (e) {
@@ -633,7 +655,10 @@
 		function canParseAsCSS(text) {
 			try {
 				if (!text.includes('{') || !text.includes(':')) return false;
-				if (typeof CSSStyleSheet !== 'undefined' && CSSStyleSheet.prototype.replaceSync) {
+				if (
+					typeof CSSStyleSheet !== 'undefined' &&
+					CSSStyleSheet.prototype.replaceSync
+				) {
 					const sheet = new CSSStyleSheet();
 					const safeText = text.replace(/@import\s+[^;]+;?/g, '');
 					sheet.replaceSync(safeText);
@@ -647,8 +672,13 @@
 
 		function canParseAsJS(text) {
 			try {
-				const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-				let testStr = text.replace(/^\s*(import|export)\b[^;]*;?/gm, '');
+				const AsyncFunction = Object.getPrototypeOf(
+					async function () {},
+				).constructor;
+				let testStr = text.replace(
+					/^\s*(import|export)\b[^;]*;?/gm,
+					'',
+				);
 				new AsyncFunction(testStr);
 				return true;
 			} catch (e) {
@@ -659,7 +689,9 @@
 		function canParseAsMD(text) {
 			try {
 				const html = parseMarkdown(text);
-				return /<(h[1-6]|ul|ol|pre|blockquote|strong|em|del|code|a\b)/.test(html);
+				return /<(h[1-6]|ul|ol|pre|blockquote|strong|em|del|code|a\b)/.test(
+					html,
+				);
 			} catch (e) {
 				return false;
 			}
@@ -676,8 +708,14 @@
 		}
 		if (isXML && isHTML) {
 			if (/<svg\b/i.test(cleanStr)) return 'svg';
-			if (/<html|<body|<head|<!DOCTYPE html/i.test(cleanStr)) return 'html';
-			if (/<\/?(div|span|p|a|ul|li|b|i|strong|em|table|tr|td|br|hr)\b/i.test(cleanStr)) return 'html';
+			if (/<html|<body|<head|<!DOCTYPE html/i.test(cleanStr))
+				return 'html';
+			if (
+				/<\/?(div|span|p|a|ul|li|b|i|strong|em|table|tr|td|br|hr)\b/i.test(
+					cleanStr,
+				)
+			)
+				return 'html';
 			return 'xml';
 		}
 
@@ -688,8 +726,16 @@
 				JSON.parse(cleanStr);
 				isJson = true;
 			} catch (e) {
-				if (/^\s*(?:\{\s*"|\[\s*(?:\{|\[|")|\[\s*\]|\{\s*\})/.test(cleanStr)) {
-					if (!/\b(const|let|function|=>|console\.log)\b/.test(cleanStr)) {
+				if (
+					/^\s*(?:\{\s*"|\[\s*(?:\{|\[|")|\[\s*\]|\{\s*\})/.test(
+						cleanStr,
+					)
+				) {
+					if (
+						!/\b(const|let|function|=>|console\.log)\b/.test(
+							cleanStr,
+						)
+					) {
 						isJson = true;
 					}
 				}
@@ -702,20 +748,32 @@
 		const parsesAsCSS = canParseAsCSS(cleanStr);
 		const parsesAsMD = canParseAsMD(cleanStr);
 
-		const jsScore = 
+		const jsScore =
 			(parsesAsJS ? 2 : -10) +
-			(cleanStr.match(/^\s*(import\s|export\s|const\s|let\s|var\s|function\s*[\w(]|class\s)/m) ? 3 : 0) +
+			(cleanStr.match(
+				/^\s*(import\s|export\s|const\s|let\s|var\s|function\s*[\w(]|class\s)/m,
+			)
+				? 3
+				: 0) +
 			(cleanStr.match(/=>/g) ? 1 : 0) +
-			(cleanStr.match(/\b(console\.|window\.|document\.|setTimeout|Promise|async\s+function|await\s)/g) ? 2 : 0) +
+			(cleanStr.match(
+				/\b(console\.|window\.|document\.|setTimeout|Promise|async\s+function|await\s)/g,
+			)
+				? 2
+				: 0) +
 			(cleanStr.match(/['"]use strict['"]/g) ? 2 : 0);
 
-		const cssScore = 
+		const cssScore =
 			(parsesAsCSS ? 3 : -10) +
-			(cleanStr.match(/^\s*(@import|@media|@font-face|@keyframes|:root)/m) ? 3 : 0) +
-			(cleanStr.match(/(?:^|\})\s*[.#a-zA-Z0-9_-][^{]+\s*\{[\s\S]+?:/m) ? 2 : 0) +
+			(cleanStr.match(/^\s*(@import|@media|@font-face|@keyframes|:root)/m)
+				? 3
+				: 0) +
+			(cleanStr.match(/(?:^|\})\s*[.#a-zA-Z0-9_-][^{]+\s*\{[\s\S]+?:/m)
+				? 2
+				: 0) +
 			(cleanStr.match(/!important/g) ? 2 : 0);
 
-		const mdScore = 
+		const mdScore =
 			(parsesAsMD ? 2 : 0) +
 			(cleanStr.match(/^#+\s+/m) ? 2 : 0) +
 			(cleanStr.match(/^[-*+]\s+/m) ? 1 : 0) +
@@ -735,7 +793,8 @@
 		// 8. Weak fallback heuristics
 		if (isHTML) return 'html';
 		if (parsesAsJS && cleanStr.includes('function(')) return 'js';
-		if (parsesAsCSS && cleanStr.includes('{') && cleanStr.includes('}')) return 'css';
+		if (parsesAsCSS && cleanStr.includes('{') && cleanStr.includes('}'))
+			return 'css';
 
 		return 'text';
 	}
@@ -750,43 +809,50 @@
 
 		if (language === 'js') {
 			html = html
-				.replace(
-					/(\/\/.*|\/\*[\s\S]*?\*\/)/g,
-					(m, p1) => push(`<span style="color: #8b949e; font-style: italic;">${p1}</span>`)
+				.replace(/(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, p1) =>
+					push(
+						`<span style="color: #8b949e; font-style: italic;">${p1}</span>`,
+					),
 				)
 				.replace(
 					/("[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*'|`[^`\\]*(?:\\.[^`\\]*)*`)/g,
-					(m, p1) => push(`<span style="color: #a5d6ff;">${p1}</span>`)
+					(m, p1) =>
+						push(`<span style="color: #a5d6ff;">${p1}</span>`),
 				)
 				.replace(
 					/\b(const|let|var|function|class|extends|new|return|import|export|from|default|if|else|for|while|switch|case|try|catch|finally|throw|async|await|typeof|instanceof)\b/g,
-					(m, p1) => push(`<span style="color: #ff7b72; font-weight: bold;">${p1}</span>`)
+					(m, p1) =>
+						push(
+							`<span style="color: #ff7b72; font-weight: bold;">${p1}</span>`,
+						),
 				)
-				.replace(
-					/\b(true|false|null|undefined|NaN)\b/g,
-					(m, p1) => push(`<span style="color: #79c0ff;">${p1}</span>`)
+				.replace(/\b(true|false|null|undefined|NaN)\b/g, (m, p1) =>
+					push(`<span style="color: #79c0ff;">${p1}</span>`),
 				)
-				.replace(
-					/\b(\d+)\b/g,
-					(m, p1) => push(`<span style="color: #d2a8ff;">${p1}</span>`)
+				.replace(/\b(\d+)\b/g, (m, p1) =>
+					push(`<span style="color: #d2a8ff;">${p1}</span>`),
 				);
 		} else if (language === 'css') {
 			html = html
-				.replace(
-					/(\/\*[\s\S]*?\*\/)/g,
-					(m, p1) => push(`<span style="color: #8b949e; font-style: italic;">${p1}</span>`)
+				.replace(/(\/\*[\s\S]*?\*\/)/g, (m, p1) =>
+					push(
+						`<span style="color: #8b949e; font-style: italic;">${p1}</span>`,
+					),
 				)
 				.replace(
 					/([^{]+)\s*\{/g,
-					(m, p1) => `${push(`<span style="color: #79c0ff; font-weight: bold;">${p1}</span>`)} {`
+					(m, p1) =>
+						`${push(`<span style="color: #79c0ff; font-weight: bold;">${p1}</span>`)} {`,
 				)
 				.replace(
 					/([\w-]+)\s*:/g,
-					(m, p1) => `${push(`<span style="color: #7ee787;">${p1}</span>`)}:`
+					(m, p1) =>
+						`${push(`<span style="color: #7ee787;">${p1}</span>`)}:`,
 				)
 				.replace(
 					/:([^;}]+)/g,
-					(m, p1) => `: ${push(`<span style="color: #a5d6ff;">${p1}</span>`)}`
+					(m, p1) =>
+						`: ${push(`<span style="color: #a5d6ff;">${p1}</span>`)}`,
 				);
 		} else if (
 			language === 'html' ||
@@ -794,63 +860,67 @@
 			language === 'svg'
 		) {
 			html = html
-				.replace(
-					/(&lt;!--[\s\S]*?--&gt;)/g,
-					(m, p1) => push(`<span style="color: #8b949e; font-style: italic;">${p1}</span>`)
+				.replace(/(&lt;!--[\s\S]*?--&gt;)/g, (m, p1) =>
+					push(
+						`<span style="color: #8b949e; font-style: italic;">${p1}</span>`,
+					),
 				)
 				.replace(
 					/(&lt;\/?[a-zA-Z0-9:-]+)(\s|&gt;)/g,
-					(m, p1, p2) => `${push(`<span style="color: #7ee787;">${p1}</span>`)}${p2}`
+					(m, p1, p2) =>
+						`${push(`<span style="color: #7ee787;">${p1}</span>`)}${p2}`,
 				)
 				.replace(
 					/(\s[a-zA-Z0-9:-]+=)(["\'][^"\']*["\'])/g,
-					(m, p1, p2) => `${p1}${push(`<span style="color: #a5d6ff;">${p2}</span>`)}`
+					(m, p1, p2) =>
+						`${p1}${push(`<span style="color: #a5d6ff;">${p2}</span>`)}`,
 				);
 		} else if (language === 'md') {
 			html = html
-				.replace(
-					/(`.*?`)/g,
-					(m, p1) => push(`<span style="color: #a5d6ff; background: rgba(110,118,129,0.4); padding: 2px 4px; border-radius: 4px;">${p1}</span>`)
+				.replace(/(`.*?`)/g, (m, p1) =>
+					push(
+						`<span style="color: #a5d6ff; background: rgba(110,118,129,0.4); padding: 2px 4px; border-radius: 4px;">${p1}</span>`,
+					),
 				)
-				.replace(
-					/^(#+\s+.*)$/gm,
-					(m, p1) => push(`<span style="color: #1f6feb; font-weight: bold;">${p1}</span>`)
+				.replace(/^(#+\s+.*)$/gm, (m, p1) =>
+					push(
+						`<span style="color: #1f6feb; font-weight: bold;">${p1}</span>`,
+					),
 				)
-				.replace(
-					/(\*\*.*?\*\*)/g,
-					(m, p1) => push(`<span style="color: #ff7b72; font-weight: bold;">${p1}</span>`)
+				.replace(/(\*\*.*?\*\*)/g, (m, p1) =>
+					push(
+						`<span style="color: #ff7b72; font-weight: bold;">${p1}</span>`,
+					),
 				)
-				.replace(
-					/(\*.*?\*)/g,
-					(m, p1) => push(`<span style="color: #ff7b72; font-style: italic;">${p1}</span>`)
+				.replace(/(\*.*?\*)/g, (m, p1) =>
+					push(
+						`<span style="color: #ff7b72; font-style: italic;">${p1}</span>`,
+					),
 				)
-				.replace(
-					/(\[.*?\]\(.*?\))/g,
-					(m, p1) => push(`<span style="color: #58a6ff;">${p1}</span>`)
+				.replace(/(\[.*?\]\(.*?\))/g, (m, p1) =>
+					push(`<span style="color: #58a6ff;">${p1}</span>`),
 				);
 		} else if (language === 'json') {
 			html = html
-				.replace(
-					/("[^"\\]*(?:\\.[^"\\]*)*")(\s*:?)/g,
-					(m, p1, p2) => {
-						if (p2.includes(':')) {
-							return `${push(`<span style="color: #79c0ff; font-weight: bold;">${p1}</span>`)}${p2}`;
-						}
-						return `${push(`<span style="color: #a5d6ff;">${p1}</span>`)}${p2}`;
+				.replace(/("[^"\\]*(?:\\.[^"\\]*)*")(\s*:?)/g, (m, p1, p2) => {
+					if (p2.includes(':')) {
+						return `${push(`<span style="color: #79c0ff; font-weight: bold;">${p1}</span>`)}${p2}`;
 					}
+					return `${push(`<span style="color: #a5d6ff;">${p1}</span>`)}${p2}`;
+				})
+				.replace(/\b(true|false|null)\b/g, (m, p1) =>
+					push(`<span style="color: #79c0ff;">${p1}</span>`),
 				)
-				.replace(
-					/\b(true|false|null)\b/g,
-					(m, p1) => push(`<span style="color: #79c0ff;">${p1}</span>`)
-				)
-				.replace(
-					/\b(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b/g,
-					(m, p1) => push(`<span style="color: #d2a8ff;">${p1}</span>`)
+				.replace(/\b(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b/g, (m, p1) =>
+					push(`<span style="color: #d2a8ff;">${p1}</span>`),
 				);
 		}
 
 		while (html.includes('\x01NYA')) {
-			html = html.replace(/\x01NYA(\d+)NYA\x02/g, (m, idx) => placeholders[idx]);
+			html = html.replace(
+				/\x01NYA(\d+)NYA\x02/g,
+				(m, idx) => placeholders[idx],
+			);
 		}
 		return html;
 	}
@@ -873,11 +943,17 @@
 			)
 			.join('');
 
-		const extraStyle = isEnlarged ? ' max-height: none; height: 100%; border: none; border-radius: 0;' : '';
+		const extraStyle = isEnlarged
+			? ' max-height: none; height: 100%; border: none; border-radius: 0;'
+			: '';
 		const borderClass = isEnlarged ? '' : ' border border-border';
 
 		return (
-			'<div class="nyatten-code-container font-mono text-sm rounded-xl bg-muted/20' + borderClass + '" style="' + extraStyle + '">' +
+			'<div class="nyatten-code-container font-mono text-sm rounded-xl bg-muted/20' +
+			borderClass +
+			'" style="' +
+			extraStyle +
+			'">' +
 			'<table class="nyatten-code-table">' +
 			'<tbody>' +
 			rowsHtml +
@@ -937,7 +1013,9 @@
 		);
 		html = html.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, url) => {
 			const trimmedUrl = url.trim();
-			const cleanForCheck = trimmedUrl.toLowerCase().replace(/[\s\x00-\x1F]/g, '');
+			const cleanForCheck = trimmedUrl
+				.toLowerCase()
+				.replace(/[\s\x00-\x1F]/g, '');
 			const isDangerous =
 				cleanForCheck.startsWith('javascript:') ||
 				cleanForCheck.startsWith('data:') ||
@@ -945,7 +1023,9 @@
 			if (isDangerous) {
 				return `<a href="#" target="_blank" class="text-link hover:underline">${text}</a>`;
 			}
-			const safeUrl = trimmedUrl.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+			const safeUrl = trimmedUrl
+				.replace(/"/g, '&quot;')
+				.replace(/'/g, '&#39;');
 			return `<a href="${safeUrl}" target="_blank" class="text-link hover:underline">${text}</a>`;
 		});
 		html = html.replace(
@@ -985,9 +1065,13 @@
 			})
 			.join('');
 
-		const heightClass = isEnlarged ? 'h-full p-6 sm:p-10' : 'max-h-96 p-4 border border-border rounded-xl';
+		const heightClass = isEnlarged
+			? 'h-full p-6 sm:p-10'
+			: 'max-h-96 p-4 border border-border rounded-xl';
 		return (
-			'<div class="nyatten-markdown-preview prose dark:prose-invert ' + heightClass + ' overflow-y-auto bg-card text-foreground text-sm">' +
+			'<div class="nyatten-markdown-preview prose dark:prose-invert ' +
+			heightClass +
+			' overflow-y-auto bg-card text-foreground text-sm">' +
 			html +
 			'</div>'
 		);
@@ -1095,7 +1179,12 @@
 				'<div class="w-full h-full overflow-hidden bg-card">' +
 				parseMarkdown(loadedContent || '', true) +
 				'</div>';
-		} else if (format === 'js' || format === 'css' || format === 'json' || format === 'xml') {
+		} else if (
+			format === 'js' ||
+			format === 'css' ||
+			format === 'json' ||
+			format === 'xml'
+		) {
 			bodyHtml =
 				'<div class="w-full h-full overflow-hidden bg-muted/10">' +
 				renderCodeBlock(loadedContent || '', format, true) +
@@ -1500,7 +1589,16 @@
 			}
 
 			const config = ctx.getConfig();
-			const customFormats = ['svg', 'md', 'html', 'js', 'css', 'sb3', 'json', 'xml'];
+			const customFormats = [
+				'svg',
+				'md',
+				'html',
+				'js',
+				'css',
+				'sb3',
+				'json',
+				'xml',
+			];
 
 			let buffer = null;
 			let bytes = null;
@@ -2064,7 +2162,6 @@
 		},
 	});
 
-
 	/* ---------------------------------------------------------------------------
 	 * ここから下に新しいモジュールを追記していく:
 	 * ------------------------------------------------------------------------- */
@@ -2077,14 +2174,14 @@
 	const ACTIVE_START_MARKER = '\u3164';
 	const ACTIVE_PRIVATE_MARKER = '\u115F';
 	const ACTIVE_CHAR_MAP = {
-		'0': '\u1160',
-		'1': '\uffa0',
-		'2': '\u3164'
+		0: '\u1160',
+		1: '\uffa0',
+		2: '\u3164',
 	};
 	const ACTIVE_REV_MAP = {
 		'\u1160': '0',
 		'\uffa0': '1',
-		'\u3164': '2'
+		'\u3164': '2',
 	};
 
 	function encodeTimestamp(isPrivate) {
@@ -2134,7 +2231,8 @@
 	Nyatten.registerModule({
 		id: 'active-indicator',
 		name: 'アクティブインジケータ',
-		description: '有効時2分30秒おきにユーザー名の先頭に不可視文字でタイムスタンプを極力圧縮して挿入し、オンライン状態の点を表示します。',
+		description:
+			'ユーザーのステータスを確認します(相手がNyattenを使用している必要があります)',
 		defaultConfig: {
 			enabled: true,
 			privateStatus: false,
@@ -2150,14 +2248,14 @@
 			// スタイルの注入
 			Nyatten.util.addStyle(
 				'.nyatten-active-dot {' +
-				'  width: 8px;' +
-				'  height: 8px;' +
-				'  border-radius: 50%;' +
-				'  display: inline-block;' +
-				'  margin-left: 6px;' +
-				'  vertical-align: middle;' +
-				'  flex-shrink: 0;' +
-				'}'
+					'  width: 8px;' +
+					'  height: 8px;' +
+					'  border-radius: 50%;' +
+					'  display: inline-block;' +
+					'  margin-left: 6px;' +
+					'  vertical-align: middle;' +
+					'  flex-shrink: 0;' +
+					'}',
 			);
 
 			// 初回実行と定期実行 (2分30秒 = 150000msおき)
@@ -2170,7 +2268,10 @@
 			const titleEl = document.querySelector('title');
 			if (titleEl) {
 				this._titleObserver = new MutationObserver(() => {
-					if (document.title && document.title.includes(ACTIVE_START_MARKER)) {
+					if (
+						document.title &&
+						document.title.includes(ACTIVE_START_MARKER)
+					) {
 						document.title = stripTimestamp(document.title);
 					}
 				});
@@ -2180,13 +2281,16 @@
 					subtree: true,
 				});
 			}
-			if (document.title && document.title.includes(ACTIVE_START_MARKER)) {
+			if (
+				document.title &&
+				document.title.includes(ACTIVE_START_MARKER)
+			) {
 				document.title = stripTimestamp(document.title);
 			}
 
 			// DOMのスキャンと監視
 			this._scan(document.body);
-			
+
 			const debouncedScan = Nyatten.util.debounce(() => {
 				this._scan(document.body);
 			}, 100);
@@ -2239,14 +2343,16 @@
 						const seconds = Math.floor((diff % 60000) / 1000);
 
 						const parts = [];
-						if (months > 0) parts.push(`${months}m`);
-						if (days > 0) parts.push(`${days}d`);
-						if (hours > 0) parts.push(`${hours}h`);
-						if (minutes > 0) parts.push(`${minutes}m`);
-						if (seconds > 0) parts.push(`${seconds}s`);
+						if (months > 0) parts.push(`${months}月`);
+						if (days > 0) parts.push(`${days}日`);
+						if (hours > 0) parts.push(`${hours}時間`);
+						if (minutes > 0) parts.push(`${minutes}分`);
+						if (seconds > 0) parts.push(`${seconds}秒`);
 
 						if (parts.length === 0) {
-							parts.push('0s');
+							parts.push('たったいま');
+						} else {
+							parts.push('前');
 						}
 
 						dot.title = `オフライン(${parts.join('')})`;
@@ -2264,7 +2370,10 @@
 				NodeFilter.SHOW_TEXT,
 				{
 					acceptNode: (node) => {
-						if (node.nodeValue && node.nodeValue.includes(ACTIVE_START_MARKER)) {
+						if (
+							node.nodeValue &&
+							node.nodeValue.includes(ACTIVE_START_MARKER)
+						) {
 							return NodeFilter.FILTER_ACCEPT;
 						}
 						return NodeFilter.FILTER_REJECT;
@@ -2285,15 +2394,23 @@
 					textNode.nodeValue = cleanText;
 
 					const next = textNode.nextSibling;
-					if (next && next.classList && next.classList.contains('nyatten-active-dot')) {
+					if (
+						next &&
+						next.classList &&
+						next.classList.contains('nyatten-active-dot')
+					) {
 						next.dataset.timestamp = status.timestamp || '';
-						next.dataset.isPrivate = status.isPrivate ? 'true' : 'false';
+						next.dataset.isPrivate = status.isPrivate
+							? 'true'
+							: 'false';
 						this._updateDotColor(next);
 					} else {
 						const dot = document.createElement('span');
 						dot.className = 'nyatten-active-dot';
 						dot.dataset.timestamp = status.timestamp || '';
-						dot.dataset.isPrivate = status.isPrivate ? 'true' : 'false';
+						dot.dataset.isPrivate = status.isPrivate
+							? 'true'
+							: 'false';
 						this._updateDotColor(dot);
 						textNode.after(dot);
 					}
@@ -2301,9 +2418,14 @@
 			}
 
 			// 入力欄やテキストエリアのスキャン (表示名編集欄などに入り込まないように)
-			const inputs = document.querySelectorAll('input[type="text"], textarea');
+			const inputs = document.querySelectorAll(
+				'input[type="text"], textarea',
+			);
 			for (const input of inputs) {
-				if (input.value && input.value.startsWith(ACTIVE_START_MARKER)) {
+				if (
+					input.value &&
+					input.value.startsWith(ACTIVE_START_MARKER)
+				) {
 					input.value = stripTimestamp(input.value);
 				}
 			}
@@ -2336,7 +2458,9 @@
 			if (method !== 'GET') headers['Content-Type'] = 'application/json';
 			if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
 
-			const actingUserId = window.localStorage.getItem('atten.acting_user_id');
+			const actingUserId = window.localStorage.getItem(
+				'atten.acting_user_id',
+			);
 			if (actingUserId) {
 				headers['X-Acting-User-Id'] = actingUserId;
 			}
@@ -2350,7 +2474,11 @@
 			const json = await res.json().catch(() => null);
 			if (!res.ok || json?.ok === false) {
 				const code = json?.code;
-				if (method !== 'GET' && code === 'csrf_validation_failed' && !_isRetry) {
+				if (
+					method !== 'GET' &&
+					code === 'csrf_validation_failed' &&
+					!_isRetry
+				) {
 					return this._request(method, path, body, true);
 				}
 				const err = new Error(code || `HTTP ${res.status}`);
@@ -2372,7 +2500,9 @@
 			const config = this._ctx.getConfig();
 			if (!config.enabled) return;
 
-			const actingUserId = window.localStorage.getItem('atten.acting_user_id');
+			const actingUserId = window.localStorage.getItem(
+				'atten.acting_user_id',
+			);
 			if (!actingUserId) {
 				this._ctx.log('未ログインまたは操作アカウントがありません');
 				return;
@@ -2381,7 +2511,9 @@
 			try {
 				const data = await this._apiGet('/session/users');
 				if (!Array.isArray(data)) return;
-				const activeEntry = data.find((e) => e?.user?.id === actingUserId);
+				const activeEntry = data.find(
+					(e) => e?.user?.id === actingUserId,
+				);
 				if (!activeEntry || !activeEntry.user) return;
 
 				const scratchName = activeEntry.user.scratch_name;
@@ -2392,7 +2524,12 @@
 				const newDisplayName = prefix + cleanName;
 
 				if (newDisplayName !== currentDisplayName) {
-					this._ctx.log('ユーザー名を更新します:', cleanName, '->', newDisplayName);
+					this._ctx.log(
+						'ユーザー名を更新します:',
+						cleanName,
+						'->',
+						newDisplayName,
+					);
 					await this._apiPatch(`/users/${scratchName}`, {
 						display_name: newDisplayName,
 					});
@@ -2401,9 +2538,12 @@
 					this._ctx.log('ユーザー名は最新です:', newDisplayName);
 				}
 			} catch (e) {
-				this._ctx.nyatten.warn('アクティブインジケータの更新に失敗しました:', e);
+				this._ctx.nyatten.warn(
+					'アクティブインジケータの更新に失敗しました:',
+					e,
+				);
 			}
-		}
+		},
 	});
 
 	/* ---------------------------------------------------------------------------
@@ -3503,13 +3643,14 @@
 	Nyatten.settingsGroups.push({
 		moduleId: 'active-indicator',
 		title: 'アクティブインジケータ',
-		description: 'オンライン状態をユーザー名の先頭に埋め込み、他のユーザーの横にアクティブ状態を示す点を表示します。',
+		description:
+			'ユーザーのステータスを確認します(相手もNyattenを使用している必要があります)',
 		fields: [
 			{
 				key: 'privateStatus',
 				label: 'ステータスを非公開',
 				type: 'toggle',
-				description: '有効な場合、タイムスタンプの代わりに非公開を意味する文字を挿入します。',
+				description: '他のNyattenユーザーからステータスを隠します',
 			},
 		],
 	});
