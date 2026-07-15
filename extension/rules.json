@@ -1,20 +1,20 @@
 [
-  {
-    "id": 1,
-    "priority": 1,
-    "action": {
-      "type": "modifyHeaders",
-      "requestHeaders": [
-        {
-          "header": "Referer",
-          "operation": "set",
-          "value": "https://scratch.mit.edu/"
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Referer",
+                    "operation": "set",
+                    "value": "https://scratch.mit.edu/"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "||scratch.mit.edu/site-api/comments/",
+            "resourceTypes": ["xmlhttprequest"]
         }
-      ]
-    },
-    "condition": {
-      "urlFilter": "||scratch.mit.edu/site-api/comments/",
-      "resourceTypes": ["xmlhttprequest"]
     }
-  }
 ]

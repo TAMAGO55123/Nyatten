@@ -1,68 +1,68 @@
 {
-	"manifest_version": 3,
-	"name": "Nyatten",
-	"version": "0.0.13",
-	"description": "Nyattttttttttten",
-	"permissions": [
-		"storage",
-		"cookies",
-		"declarativeNetRequestWithHostAccess"
-	],
-	"host_permissions": [
-		"https://atten.win/*",
-		"https://*.atten.win/*",
-		"https://scratch.mit.edu/*"
-	],
-	"background": {
-		"service_worker": "background.js"
-	},
-	"declarative_net_request": {
-		"rule_resources": [
-			{
-				"id": "scratch_referer_ruleset",
-				"enabled": true,
-				"path": "rules.json"
-			}
-		]
-	},
-	"icons": {
-		"16": "nyatten-16.png",
-		"48": "nyatten-48.png",
-		"128": "nyatten-128.png"
-	},
-	"web_accessible_resources": [
-		{
-			"resources": [
-				"vendor/emoji-mart/browser.js",
-				"vendor/emoji-mart/data.json"
-			],
-			"matches": ["https://atten.win/*", "https://*.atten.win/*"]
-		}
-	],
-	"content_scripts": [
-		{
-			"matches": ["https://atten.win/*"],
-			"js": ["content.js"],
-			"run_at": "document_idle"
-		},
-		{
-			"matches": ["https://atten.win/*"],
-			"js": ["turnstileBridge.js"],
-			"world": "MAIN",
-			"run_at": "document_idle"
-		},
-		{
-			"matches": ["https://atten.win/*"],
-			"js": ["emojiMartBridge.js"],
-			"world": "MAIN",
-			"run_at": "document_idle"
-		},
-		{
-			"matches": ["https://turbowarp.org/*", "https://*.turbowarp.org/*"],
-			"js": ["turbowarpBridge.js"],
-			"world": "MAIN",
-			"all_frames": true,
-			"run_at": "document_start"
-		}
-	]
+    "manifest_version": 3,
+    "name": "Nyatten",
+    "version": "0.0.13",
+    "description": "Nyattttttttttten",
+    "permissions": [
+        "storage",
+        "cookies",
+        "declarativeNetRequestWithHostAccess"
+    ],
+    "host_permissions": [
+        "https://atten.win/*",
+        "https://*.atten.win/*",
+        "https://scratch.mit.edu/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "scratch_referer_ruleset",
+                "enabled": true,
+                "path": "rules.json"
+            }
+        ]
+    },
+    "icons": {
+        "16": "nyatten-16.png",
+        "48": "nyatten-48.png",
+        "128": "nyatten-128.png"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "vendor/emoji-mart/browser.js",
+                "vendor/emoji-mart/data.json"
+            ],
+            "matches": ["https://atten.win/*", "https://*.atten.win/*"]
+        }
+    ],
+    "content_scripts": [
+        {
+            "matches": ["https://atten.win/*"],
+            "js": ["content.js"],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": ["https://atten.win/*"],
+            "js": ["turnstileBridge.js"],
+            "world": "MAIN",
+            "run_at": "document_idle"
+        },
+        {
+            "matches": ["https://atten.win/*"],
+            "js": ["emojiMartBridge.js"],
+            "world": "MAIN",
+            "run_at": "document_idle"
+        },
+        {
+            "matches": ["https://turbowarp.org/*", "https://*.turbowarp.org/*"],
+            "js": ["turbowarpBridge.js"],
+            "world": "MAIN",
+            "all_frames": true,
+            "run_at": "document_start"
+        }
+    ]
 }
